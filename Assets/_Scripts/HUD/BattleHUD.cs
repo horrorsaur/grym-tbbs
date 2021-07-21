@@ -52,6 +52,7 @@ public class BattleHUD : MonoBehaviour
         BattleManager.OnActiveCharacterChange += InstantiateAbilityOptions;
         BattleManager.OnLoadPlayerList += InstantiateEnemySelectionOptions;
         BattleManager.OnActiveCharacterChange += SetBattleChoiceParentPosition;
+        BattleManager.EnemyRemoved += InstantiateEnemySelectionOptions;
     }
 
     private void OnDisable()
@@ -64,6 +65,7 @@ public class BattleHUD : MonoBehaviour
         BattleManager.OnActiveCharacterChange -= InstantiateAbilityOptions;
         BattleManager.OnLoadPlayerList -= InstantiateEnemySelectionOptions;
         BattleManager.OnActiveCharacterChange -= SetBattleChoiceParentPosition;
+        BattleManager.EnemyRemoved -= InstantiateEnemySelectionOptions;
     }
     #endregion
 
@@ -190,6 +192,10 @@ public class BattleHUD : MonoBehaviour
 
     private void InstantiateEnemySelectionOptions(List<PartyMember> _members)
     {
+        enemyChoices.ForEach(x => Destroy(x)); // this is hacky wacky
+        enemyChoices.Clear();
+
+
         foreach (PartyMember member in _members)
         {
             if (member.type == CharacterType.ENEMY)

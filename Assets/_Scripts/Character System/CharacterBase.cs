@@ -61,6 +61,8 @@ public class CharacterBase : MonoBehaviour
         int current = stats.GetCurrentHealth();
         int healthRemaining = current - _amount;
 
+        DamagePopup.Create(transform.position, _amount);
+
         stats.SetCurrentHealth(healthRemaining);
         healthBar?.SetHealth(healthRemaining);
         Debug.Log($"{characterName} took {_amount} damage from {_name}");

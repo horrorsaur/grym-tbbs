@@ -43,6 +43,7 @@ public class BattleManager : MonoBehaviour
     public static event Action<string> OnEnemyTurn;
     public static event Action<BattleState> OnBattleStateUpdate;
     public static event Action<string, int, string> OnDamageCharacter;
+    public static event Action<List<PartyMember>> EnemyRemoved;
     #endregion
 
     #region OnEnable & OnDisable
@@ -238,9 +239,12 @@ public class BattleManager : MonoBehaviour
             {
                 if (battleParticipants[i].type == CharacterType.ENEMY)
                 {
+
                     Debug.Log($"Removed {battleParticipants[i].characterName} from battle");
                     latestDefeatedEnemy = battleParticipants[i];
                     battleParticipants.RemoveAt(i);
+
+                    EnemyRemoved?.Invoke(battleParticipants);
                     RegenerateTurnQueue();
                 }
             }
@@ -322,25 +326,16 @@ public class BattleManager : MonoBehaviour
     #endregion
 
     #region Physical Attack Phase
-    /// <summary>
-    /// First, we need to get the position of the currently selected target
-    /// Then, we need to save our current position
-    /// Then, we need to calculate the distance
-    /// Then we need to navigate the distance
-    /// after navigating to the target, it's time to play the associated attack animation
-    /// this step will require some kind of delegate action event logic that can fire whenever an animation is done for e.g
-    /// </summary>
-    /// 
+    // throw this shit away
 
     private void HandleAttackPhase()
     {
-        CalculateDistance();
-
+        StartCoroutine(CalculateDistance());
     }
 
-    private void CalculateDistance()
+    private IEnumerator CalculateDistance()
     {
-        var previousPosition = activeCharacterTurn.characterPosition;
+        var previousPosition = activeCharacterTurn.characterPosition.position;
         float distanceToMove = Vector2.Distance(activeCharacterTurn.characterPosition.position, selectedEnemy.characterPosition.position);
         Vector3 m = new Vector3(distanceToMove, 0f, 0f);
         GameObject go;
@@ -350,8 +345,11 @@ public class BattleManager : MonoBehaviour
         else
             go = enemyPartyManager.FindCharacterGameObject(activeCharacterTurn.characterName);
 
-        //go.transform.position += m;
         go.transform.position = selectedEnemy.characterPosition.position;
+        activeCharacterTurn.baseCharacter.PlayAnimation("Attack");
+
+        yield return new WaitForSeconds(0.5f);
+        go.transform.position = previousPosition;
     }
 
     private void MoveCharacterToEnemy(Action _onMoveComplete)
